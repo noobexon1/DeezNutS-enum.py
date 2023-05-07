@@ -1,0 +1,107 @@
+** DNS Server Types **
+
+    1) Recursive Resolver:
+
+        # Acts as an agent between the client and the NS.
+        # process:
+            * wait for a DNS query from a web client.
+            * either:
+
+                1) query can be resolved with cached data.
+                2) Sends entry back to client.
+
+                OR
+
+                1) Sends query to a Root NS.
+                2) Receive response from Root NS.
+                3) Using the response to send a query to the appropriate TLD NS.
+                4) Receive response from TLD NS.
+                4) Using the response to send a query to the Authoritative NS.
+                5) receive response from Authoritative NS.
+                6) Sends entry back to client.
+
+    2) Root NS:
+
+       # There are 13 Root NS worldwide at the moment.
+       # This is the first stop of the Recursive Resolver to search for DNS entries.
+
+    3) TLD NS:
+
+       # Manages all domains that have the same TLD (.net, .com, .gov etc...).
+
+    4) Authoritative NS:
+
+       # Store DNS records information for domains.
+
+
+
+** DNS Structure **
+
+    - <Top-Level-Domain-1>.
+        - <Domain-1>.
+            - <Sub-Domain-1.1>.
+            - <Sub-Domain-1.2>.
+            .
+            .
+        - <Domain-2>.
+        .
+        .
+
+
+
+
+** DNS Zone Types **
+
+    1) Primary DNS Server:
+
+       # Contains 'Zone File' which contains authoritative info for a domain.
+       # Responsible for administrating the zone and updating the secondary DNS servers.
+       # Zone's DNS records can only be edited here.
+
+    2) Secondary DNS Server:
+
+       # Contains Read-Only copies of the zone file of the primary DNS server.
+       # Serves as a backup server for the primary DNS server.
+
+
+
+
+** Zone Files **
+
+    # Contains a list of entries for the corresponding domain.
+    # Entry is of the format:  <Domain's-IP>   <Domain-name>
+    # Zone file can only have one Primary DNS server.
+    # Zone file can have as many Secondary DNS Servers as needed.
+    # Local zone file path on linux is '/etc/hosts'.
+
+
+
+
+** Zone Transfer & Types **
+
+    # It is the creation and transfer of the zone file from the primary DNS server to the secondary DNS server.
+    # Does not require authentication.
+    # There are 2 types of zone transfers:
+
+        1) AXFR - Asynchronous Full Transfer Zone:
+
+            # Complete copy and transfer of all the entries from the zone file found at Primary DNS server.
+
+        2) IXFR - Incremental Zone Transfer:
+
+            # Only the changed and new DNS records of the zone file are copied and transferred.
+
+
+
+** Record Types **
+
+    A	  ->   IP Version 4 Address records.
+    AAAA  ->   IP Version 6 Address records.
+    CNAME ->   Canonical Name records.
+    HINFO ->   Host Information records.
+    ISDN  ->   Integrated Services Digital Network records.
+    MX	  ->   Mail exchanger record.
+    NS	  ->   Name Server records.
+    PTR	  ->   Reverse-lookup Pointer records.
+    SOA	  ->   Start of Authority records.
+    TXT	  ->   Text records.

@@ -1,0 +1,5 @@
+# DNS can provide much information about the target's infrastructure.
+# We can divide this information into the following categories:
+    1) DNS Records.
+    2) Subdomains & Hosts.
+    3) DNS Security.
