@@ -1,31 +1,69 @@
 #!/usr/bin/env python3
-
-from dns import *
+import dns.resolver
+import dns.zone
+import dns.query
+import dns.exception
 import argparse
+
+
+# TODO: check dns_records_lookup().
+# TODO: add the feature to allow either ip or resolved names.
+
+
+record_types = ["A", "AAAA", "CNAME", "HINFO", "ISDN", "MX", "NS", "PTR", "SOA", "TXT"]
+
+
+def dns_records_lookup(domain_name):
+    for record_type in record_types:
+        try:
+            records = dns.resolver.resolve(domain_name, record_type)
+            print(f"{record_type} records:")
+            for record in records:
+                print(record)
+            print()  # Add an empty line for better readability
+        except dns.resolver.NoAnswer:
+            print(f"No {record_type} records found.")
+        except dns.exception.DNSException as error:
+            print(f"DNS query for {record_type} records failed: {error}")
+
 
 def asynchronous_full_zone_transfer(name_server, domain_name):
     try:
-        axfr = zone.from_xfr(query.xfr(name_server, domain_name))
-        if axfr:
+        zone_file = dns.zone.from_xfr(dns.query.xfr(name_server, domain_name))
+        if zone_file:
             print('[*] Successful Zone Transfer from {}'.format(name_server))
-            for record in axfr:
+            for record in zone_file:
                 subdomains.append('{}.{}'.format(record.to_text(), domain_name))
 
-    except Exception as error:
-        print(error)
-        pass
+    except dns.exception.DNSException as error:
+        print(f"DNS query failed: {error}")
 
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(prog="DeezNutS-enum.py", epilog="DNS Zone Transfer Script",
-                                     usage="DeezNutS-enum.py [options] -d <DOMAIN>", prefix_chars='-', add_help=True)
+    parser = argparse.ArgumentParser(prog="DeezNutS-enum.py",
+                                     epilog="DNS Zone Transfer Script",
+                                     usage="DeezNutS-enum.py [options] -d <DOMAIN>",
+                                     prefix_chars='-',
+                                     add_help=True)
 
-    parser.add_argument('-d', action='store', metavar='Domain', type=str,
-                        help='Target Domain.\tExample: inlanefreight.htb', required=True)
-    parser.add_argument('-n', action='store', metavar='Nameserver', type=str,
-                        help='Nameservers separated by a comma.\tExample: ns1.inlanefreight.htb,ns2.inlanefreight.htb')
-    parser.add_argument('-v', action='version', version='DNS-AXFR - v1.0', help='Prints the version of DeezNutS-enum.py')
+    parser.add_argument('--version',
+                        action='version',
+                        version='DNS-AXFR - v1.0',
+                        help='Prints the current version of the DeezNutS-enum.py tool')
+
+    parser.add_argument('-d',
+                        action='store',
+                        metavar='Domain',
+                        type=str,
+                        help='Target Domain.\tExample: something.com',
+                        required=True)
+
+    parser.add_argument('-n',
+                        action='store',
+                        metavar='Nameservers',
+                        type=str,
+                        help='Nameservers separated by a comma.\tExample: ns1.something.com,ns2.something.com')
 
     args = parser.parse_args()
 
@@ -35,12 +73,12 @@ if __name__ == "__main__":
 
     # Check if URL is given
     if not args.d:
-        print('[!] You must specify target Domain.\n')
+        print('[!] You must specify a target Domain.\n')
         print(parser.print_help())
         exit()
 
     if not args.n:
-        print('[!] You must specify target nameservers.\n')
+        print('[!] You must specify at least one nameserver.\n')
         print(parser.print_help())
         exit()
 
