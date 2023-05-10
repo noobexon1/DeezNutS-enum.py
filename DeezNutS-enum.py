@@ -1,30 +1,28 @@
 #!/usr/bin/env python3
+
+import argparse
+
 import dns.resolver
 import dns.zone
 import dns.query
-import dns.exception
-import argparse
 
-
-# TODO: check dns_records_lookup().
-# TODO: add the feature to allow either ip or resolved names.
-
-
-record_types = ["A", "AAAA", "CNAME", "HINFO", "ISDN", "MX", "NS", "PTR", "SOA", "TXT"]
+record_types = ['A', 'AAAA', 'CNAME', 'HINFO', 'ISDN', 'MX', 'NS', 'PTR', 'SOA', 'TXT']
 
 
 def dns_records_lookup(domain_name):
+    print(f"[!] Trying to enumerate DNS records for domain: {domain_name}\n")
     for record_type in record_types:
         try:
             records = dns.resolver.resolve(domain_name, record_type)
             print(f"{record_type} records:")
+            print("-"*20)
             for record in records:
-                print(record)
+                print(record.to_text())
             print()  # Add an empty line for better readability
         except dns.resolver.NoAnswer:
-            print(f"No {record_type} records found.")
+            print(f"No {record_type} records found.\n")
         except dns.exception.DNSException as error:
-            print(f"DNS query for {record_type} records failed: {error}")
+            print(f"DNS query for {record_type} records failed: {error}\n")
 
 
 def asynchronous_full_zone_transfer(name_server, domain_name):
@@ -36,7 +34,7 @@ def asynchronous_full_zone_transfer(name_server, domain_name):
                 subdomains.append('{}.{}'.format(record.to_text(), domain_name))
 
     except dns.exception.DNSException as error:
-        print(f"DNS query failed: {error}")
+        print(f"DNS zone transfer failed: {error}")
 
 
 if __name__ == "__main__":
@@ -49,7 +47,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--version',
                         action='version',
-                        version='DNS-AXFR - v1.0',
+                        version='DeezNutS-enum - v1.0',
                         help='Prints the current version of the DeezNutS-enum.py tool')
 
     parser.add_argument('-d',
@@ -71,16 +69,12 @@ if __name__ == "__main__":
     subdomains = []
     nameservers = list(args.n.split(","))
 
-    # Check if URL is given
     if not args.d:
         print('[!] You must specify a target Domain.\n')
         print(parser.print_help())
         exit()
 
-    if not args.n:
-        print('[!] You must specify at least one nameserver.\n')
-        print(parser.print_help())
-        exit()
+    dns_records_lookup(domain)
 
     for nameserver in nameservers:
         asynchronous_full_zone_transfer(nameserver, domain)
